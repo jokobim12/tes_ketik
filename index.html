@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KetikCepat - Tes Mengetik Bahasa Indonesia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+        .word-box {
+            line-height: 3rem;
+            height: 6rem; /* Exactly 2 lines (3rem * 2) */
+            overflow: hidden;
+            position: relative;
+            padding: 0 1.5rem;
+            background-color: #ffffff;
+            border: 2px solid #f3f4f6;
+            border-radius: 0.5rem;
+        }
+        .word-wrapper {
+            position: relative;
+            transition: transform 0.2s ease-out;
+        }
+        .word {
+            display: inline-block;
+            margin-right: 0.75rem;
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.1s ease;
+        }
+        .word.active {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        .word.correct {
+            color: #059669; /* emerald-600 */
+        }
+        .word.incorrect {
+            color: #dc2626; /* red-600 for contrast but clean */
+            text-decoration: underline;
+        }
+        /* Custom emerald utility if needed, but Tailwind has it */
+        .bg-emerald-600 { background-color: #059669; }
+        .text-emerald-600 { color: #059669; }
+        .border-emerald-600 { border-color: #059669; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Header -->
+    <header class="w-full max-w-4xl px-6 py-8 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="asset/image/image.png" alt="Logo" class="w-10 h-10 object-contain">
+            <h1 class="text-2xl font-bold tracking-tight text-emerald-600">KetikCepat</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="restartBtnTop" class="text-gray-500 hover:text-emerald-600 transition-colors font-medium">
+                Ulangi
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-4xl px-6 flex-grow flex flex-col justify-center gap-8 -mt-12">
+        
+        <!-- Settings & Stats Header -->
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pilih Waktu</label>
+                <div class="flex gap-2">
+                    <button data-time="30" class="time-btn px-4 py-2 border-2 border-emerald-600 rounded-lg font-semibold text-emerald-600 transition-all hover:bg-emerald-50 active">30s</button>
+                    <button data-time="60" class="time-btn px-4 py-2 border-2 border-emerald-600 rounded-lg font-semibold text-emerald-600 transition-all hover:bg-emerald-50">1m</button>
+                    <button data-time="120" class="time-btn px-4 py-2 border-2 border-emerald-600 rounded-lg font-semibold text-emerald-600 transition-all hover:bg-emerald-50">2m</button>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-center">
+                <div class="text-center">
+                    <div id="wpmDisplay" class="text-4xl font-bold text-emerald-600">0</div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">WPM</div>
+                </div>
+                <div class="text-center">
+                    <div id="accuracyDisplay" class="text-4xl font-bold text-emerald-600">0%</div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Akurasi</div>
+                </div>
+                <div class="text-center">
+                    <div id="timerDisplay" class="text-4xl font-bold text-emerald-600">30</div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Detik</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Word Area -->
+        <div id="wordContainer" class="word-box p-8 bg-white border-2 border-gray-100 rounded-lg text-2xl text-gray-400 select-none">
+            <!-- Words will be injected here -->
+            Memuat kata...
+        </div>
+
+        <!-- Input Area -->
+        <div class="relative">
+            <input type="text" id="wordInput" 
+                   class="w-full p-6 text-2xl bg-white border-2 border-emerald-600 rounded-lg focus:outline-none transition-all placeholder:text-gray-300"
+                   placeholder="Mulai mengetik di sini..."
+                   autocomplete="off"
+                   autofocus>
+            <div class="absolute right-6 top-1/2 -translate-y-1/2">
+                <button id="restartBtn" class="p-2 text-gray-400 hover:text-emerald-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Modal (Hidden by default) -->
+        <div id="resultOverlay" class="hidden fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-6 text-center">
+            <img src="asset/image/image.png" alt="Logo" class="w-16 h-16 mb-6">
+            <h2 class="text-4xl font-bold text-gray-800 mb-2">Hasil Tes Mengetik</h2>
+            <p class="text-gray-500 mb-12">Luar biasa! Teruslah berlatih untuk meningkatkan kecepatanmu.</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16 w-full max-w-2xl">
+                <div class="p-6 border-2 border-emerald-600 rounded-lg">
+                    <div id="finalWpm" class="text-5xl font-bold text-emerald-600">0</div>
+                    <div class="text-sm font-semibold text-gray-400 uppercase mt-2">Kecepatan (WPM)</div>
+                </div>
+                <div class="p-6 border-2 border-emerald-600 rounded-lg">
+                    <div id="finalAccuracy" class="text-5xl font-bold text-emerald-600">0%</div>
+                    <div class="text-sm font-semibold text-gray-400 uppercase mt-2">Akurasi</div>
+                </div>
+                <div class="p-6 border-2 border-emerald-600 rounded-lg">
+                    <div id="finalCorrect" class="text-5xl font-bold text-emerald-600">0</div>
+                    <div class="text-sm font-semibold text-gray-400 uppercase mt-2">Kata Benar</div>
+                </div>
+                <div class="p-6 border-2 border-emerald-600 rounded-lg">
+                    <div id="finalIncorrect" class="text-5xl font-bold text-emerald-600">0</div>
+                    <div class="text-sm font-semibold text-gray-400 uppercase mt-2">Kata Salah</div>
+                </div>
+            </div>
+
+            <button id="retryBtn" class="px-12 py-4 bg-emerald-600 text-white rounded-lg font-bold text-lg hover:bg-emerald-700 transition-all">
+                Coba Lagi
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-8 text-center text-sm text-gray-400">
+        &copy; 2026 KetikCepat • Dibuat dengan Emerald UI
+    </footer>
+
+    <!-- Script -->
+    <script src="asset/script.js"></script>
+</body>
+</html>
